@@ -43,28 +43,37 @@ local OPPOSITES = {
 -- StartSpawn decides where the snake appears
 -- AppleSpawners contains all possible apple spawn points
 -- Apple is the template that gets cloned during the game
-local startSpawn = workspace:WaitForChild("StartSpawn")
-local appleSpawners = workspace:WaitForChild("AppleSpawners")
-local appleTemplate = ReplicatedStorage:WaitForChild("Apple")
+local startSpawn = workspace:FindFirstChild("StartSpawn")
+local appleSpawners = workspace:FindFirstChild("AppleSpawners")
+local appleTemplate = ReplicatedStorage:FindFirstChild("Apple")
 
 -- RemoteEvents are created here so the client and server can talk
 -- Client asks to start and change direction
 -- Server sends game over and score updates back to the client
-local remotesFolder = Instance.new("Folder")
-remotesFolder.Name = "SnakeRemotes"
-remotesFolder.Parent = ReplicatedStorage
+local remotesFolder = ReplicatedStorage:FindFirstChild("SnakeRemotes")
 
-local function buildRemote(name)
-	local remote = Instance.new("RemoteEvent")
-	remote.Name = name
-	remote.Parent = remotesFolder
+if not remotesFolder then
+	remotesFolder = Instance.new("Folder")
+	remotesFolder.Name = "SnakeRemotes"
+	remotesFolder.Parent = ReplicatedStorage
+end
+
+local function getOrCreateRemote(name)
+	local remote = remotesFolder:FindFirstChild(name)
+
+	if not remote then
+		remote = Instance.new("RemoteEvent")
+		remote.Name = name
+		remote.Parent = remotesFolder
+	end
+
 	return remote
 end
 
-local rStart = buildRemote("StartGame")
-local rDirection = buildRemote("ChangeDirection")
-local rGameOver = buildRemote("GameOver")
-local rScore = buildRemote("ScoreUpdate")
+local rStart = getOrCreateRemote("StartGame")
+local rDirection = getOrCreateRemote("ChangeDirection")
+local rGameOver = getOrCreateRemote("GameOver")
+local rScore = getOrCreateRemote("ScoreUpdate")
 
 -- Snake class
 -- Each player gets their own Snake object
